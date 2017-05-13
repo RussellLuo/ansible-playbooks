@@ -50,6 +50,11 @@ $ python -mgrpc_pytools.restart --pb2-module-name='python.path.xx_pb2' --grpc-se
 ```
 
 
+## Examples
+
+See [examples](examples) to find out how to generate a simple JSON API proxy.
+
+
 ## License
 
 [MIT][4]
