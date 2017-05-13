@@ -4,7 +4,7 @@
 
 First of all, change to directory `helloworld`.
 
-### Generate the JSON API proxy
+### Generate the JSON proxy
 
 1. Generate the helloworld_pb2.py file
 
@@ -15,19 +15,19 @@ First of all, change to directory `helloworld`.
 2. Generate the Pythonic service
 
     ```bash
-    $ python -mgrpc_pytools.pythonic --pb2-module-name='helloworld_pb2' --service-name='Greeter' > service.py
+    $ python -m grpc_pytools.pythonic --pb2-module-name='helloworld_pb2' --service-name='Greeter' > service.py
     ```
 
 3. Generate the marshmallow schemas
 
     ```bash
-    $ python -mgrpc_pytools.marshmallow --pb2-module-name='helloworld_pb2' > schemas.py
+    $ python -m grpc_pytools.marshmallow --pb2-module-name='helloworld_pb2' > schemas.py
     ```
 
 4. Generate the RESTArt APIs
 
     ```bash
-    $ python -mgrpc_pytools.restart --pb2-module-name='helloworld_pb2' --grpc-server='localhost:50051' --service-name='Greeter' > apis.py
+    $ python -m grpc_pytools.restart --pb2-module-name='helloworld_pb2' --grpc-server='localhost:50051' --service-name='Greeter' > apis.py
     ```
 
 Simplify all the above steps by `make`:
@@ -42,13 +42,13 @@ $ make
 $ python greeter_server.py
 ```
 
-### Start the JSON API proxy
+### Start the JSON proxy
 
 ```bash
 $ restart apis:api -p 6666
 ```
 
-### Consume JSON APIs
+### Consume the JSON APIs
 
 ```bash
 # By cURL
