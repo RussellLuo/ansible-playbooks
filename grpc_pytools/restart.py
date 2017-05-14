@@ -48,7 +48,7 @@ class GRPCMessageRenderer(JSONRenderer):
 
     def render(self, data, context=None):
         resource = context['resource']
-        serialized = resource.resp_schema.dumps(data)
+        serialized = resource.resp_schema.dump(data)
         if serialized.errors:
             raise InternalServerError(serialized.errors)
         return super(GRPCMessageRenderer, self).render(
