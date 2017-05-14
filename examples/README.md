@@ -45,14 +45,14 @@ $ python greeter_server.py
 ### Start the JSON proxy
 
 ```bash
-$ restart apis:api -p 6666
+$ restart apis:api -p 60066
 ```
 
 ### Consume the JSON APIs
 
 ```bash
 # By cURL
-$ curl -H 'Content-Type: application/json' -XPOST http://localhost:6666/say_hello -d '{"name": "russell"}'
+$ curl -i -H 'Content-Type: application/json' -XPOST http://localhost:60066/say_hello -d '{"name": "russell"}'
 # Or by HTTPie
-$ http post http://localhost:6666/say_hello name=russell
+$ http post http://localhost:60066/say_hello name=russell
 ```
