@@ -14,6 +14,7 @@ from importlib import import_module
 
 import grpc
 
+
 HEADER = '''# -*- coding: utf-8 -*-
 
 from restart.api import RESTArt
@@ -136,6 +137,7 @@ class Generator(object):
         ])
 
         for stub_method_name, stub_method in stub_methods.iteritems():
+            # Yes, it is tricky...
             req_name = stub_method._request_serializer.im_class.__name__
             resp_name = stub_method._response_deserializer.func_closure[0].cell_contents.__name__
             self.writer.write('\n\n' + RESOURCE.format(

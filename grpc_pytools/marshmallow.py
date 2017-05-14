@@ -121,7 +121,7 @@ class Generator(object):
     def write_marshmallow_shemas(self):
         for name, message in self.message_types.iteritems():
             self.writer.write(
-                '\n\nclass {name}Schema(Schema):\n'.format(
+                '\n\n\nclass {name}Schema(Schema):\n'.format(
                     name=message.name
                 )
             )
@@ -152,7 +152,7 @@ class Generator(object):
             self.writer.write(
                 '\n    @post_load\n'
                 '    def make_{underscored_name}(self, data):\n'
-                '        return {name}(**data)\n'.format(
+                '        return {name}(**data)'.format(
                     name=message.name,
                     underscored_name=self.underscore(message.name)
                 )
