@@ -20,7 +20,7 @@ class Generator(object):
 
     writer = sys.stdout
 
-    def __init__(self, pb2_module_name, service_name, core_method_name,
+    def __init__(self, pb2_module_name, core_method_name,
                  unfold_method_args, rpc_method_args_size):
         self.pb2_module_name = pb2_module_name
         self.core_method_name = core_method_name
@@ -33,11 +33,14 @@ class Generator(object):
             self.pb2_path, self.pb2_name = '', self.pb2_module_name
 
         self.proto_package_name = self.pb2_name[:-len('_pb2')]
-        self.service_name = service_name or self.camelize(self.proto_package_name)
-        self.stub_class_name = self.service_name + 'Stub'
-
         self.pb2_module = import_module(self.pb2_module_name)
         self.sym_db_pool = self.pb2_module._sym_db.pool
+
+        self.stub_class_name = [
+            name for name in dir(self.pb2_module)
+            if not name.startswith('Beta') and name.endswith('Stub')
+        ][0]
+        self.service_name = self.stub_class_name[:-len('Stub')]
 
     @staticmethod
     def slice_every(iterable, n, padding=False, padding_item=None):
@@ -249,8 +252,6 @@ def main():
     parser.add_argument('--pb2-module-name', required=True,
                         help='The name of the generated `xx_pdb2.py` '
                              'module with the full Python path.')
-    parser.add_argument('--service-name',
-                        help='The name of the gRPC service.')
     parser.add_argument('--core-method-name', default='call_rpc',
                         help='The name of the core method that will be '
                              'used to call the actual rpc methods.')
@@ -262,7 +263,6 @@ def main():
                              'definition of each rpc method.')
     args = parser.parse_args()
     generator = Generator(args.pb2_module_name,
-                          args.service_name,
                           args.core_method_name,
                           args.unfold_method_args,
                           args.rpc_method_args_size)

@@ -76,7 +76,7 @@ class Generator(object):
 
     writer = sys.stdout
 
-    def __init__(self, pb2_module_name, grpc_server, service_name):
+    def __init__(self, pb2_module_name, grpc_server):
         self.pb2_module_name = pb2_module_name
         self.grpc_server = grpc_server
 
@@ -88,8 +88,11 @@ class Generator(object):
         self.pb2_module = import_module(self.pb2_module_name)
         self.sym_db_pool = self.pb2_module._sym_db.pool
 
-        proto_package_name = self.pb2_name[:-len('_pb2')]
-        self.service_name = service_name or self.camelize(proto_package_name)
+        self.stub_class_name = [
+            name for name in dir(self.pb2_module)
+            if not name.startswith('Beta') and name.endswith('Stub')
+        ][0]
+        self.service_name = self.stub_class_name[:-len('Stub')]
 
     @staticmethod
     def camelize(string, uppercase_first_letter=True):
@@ -121,7 +124,7 @@ class Generator(object):
         ))
 
     def write_rpc_resources(self):
-        stub_class = getattr(self.pb2_module, self.service_name + 'Stub')
+        stub_class = getattr(self.pb2_module, self.stub_class_name)
 
         channel = grpc.insecure_channel('localhost')
         stub = stub_class(channel)
@@ -160,12 +163,9 @@ def main():
     parser.add_argument('--grpc-server', required=True,
                         help='The host and port of gRPC server (in '
                              'the form of "host:port").')
-    parser.add_argument('--service-name',
-                        help='The name of the gRPC service.')
     args = parser.parse_args()
     generator = Generator(args.pb2_module_name,
-                          args.grpc_server,
-                          args.service_name)
+                          args.grpc_server)
     generator.generate()
 
 
