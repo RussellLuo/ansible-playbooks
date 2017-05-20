@@ -34,4 +34,9 @@ setup(
         'marshmallow',
         'python-restart',
     ],
+    entry_points={
+        'console_scripts': [
+            'protoc-gen-pytools-ast = grpc_pytools.protoc_plugins.ast:main',
+        ],
+    },
 )
