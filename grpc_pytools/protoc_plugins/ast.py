@@ -10,8 +10,9 @@ from .generator import Generator
 class ASTGenerator(Generator):
     """A generator that generates an AST-like JSON file from a .proto file."""
 
-    def _make_enum(self, enum):
+    def _make_enum(self, path, enum):
         return dict(
+            path=path,
             name=enum.name,
             values=[
                 dict(
@@ -22,8 +23,12 @@ class ASTGenerator(Generator):
             ]
         )
 
-    def _make_message(self, message):
+    def _make_message(self, path, message):
+        def make_path(name):
+            return path + '.' + message.name + '.' + name
+
         return dict(
+            path=path,
             name=message.name,
             fields=[
                 dict(
@@ -35,19 +40,21 @@ class ASTGenerator(Generator):
                 )
                 for field in message.field
             ],
-            enum_types=[t.name for t in message.enum_type],
-            nested_types=[t.name for t in message.nested_type]
+            nested_enums=[make_path(t.name) for t in message.enum_type],
+            nested_messages=[make_path(t.name) for t in message.nested_type]
         )
 
-    def _walk_message(self, message):
-        yield 'message', message
+    def _walk_message(self, path, message):
+        yield 'message', path, message
+
+        nested_path = path + '.' + message.name
 
         for enum in message.enum_type:
-            yield 'enum', enum
+            yield 'enum', nested_path, enum
 
         for nested in message.nested_type:
-            for type, item in self._walk_message(nested):
-                yield type, item
+            for type, path, item in self._walk_message(nested_path, nested):
+                yield type, path, item
 
     def _make_data(self, proto_file):
         # Toplevel info
@@ -57,9 +64,11 @@ class ASTGenerator(Generator):
             package=proto_file.package,
         )
 
+        base_path = '.' + proto_file.package
+
         # Enum info
         enums = [
-            self._make_enum(enum)
+            self._make_enum(base_path, enum)
             for enum in proto_file.enum_type
         ]
         data['enums'] = enums
@@ -67,11 +76,11 @@ class ASTGenerator(Generator):
         # Message info
         messages = []
         for message in proto_file.message_type:
-            for type, item in self._walk_message(message):
+            for type, path, item in self._walk_message(base_path, message):
                 if type == 'enum':
-                    enums.append(self._make_enum(item))
+                    enums.append(self._make_enum(path, item))
                 elif type == 'message':
-                    messages.append(self._make_message(item))
+                    messages.append(self._make_message(path, item))
         data['messages'] = messages
 
         # Service info

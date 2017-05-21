@@ -34,6 +34,7 @@ class ProtoLabel(Enum):
 
 
 class Generator(object):
+    """The base generator for implementing a protoc plugin."""
 
     _types_map = ProtoType._value2member_map_
     _labels_map = ProtoLabel._value2member_map_
