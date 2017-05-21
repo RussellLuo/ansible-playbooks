@@ -19,17 +19,6 @@ def slice_every(iterable, n, padding=False, padding_item=None):
         yield piece
 
 
-def camelize(string, uppercase_first_letter=True):
-    """Convert strings to CamelCase.
-
-    Borrowed from https://github.com/jpvanhal/inflection/blob/master/inflection.py
-    """
-    if uppercase_first_letter:
-        return re.sub(r"(?:^|_)(.)", lambda m: m.group(1).upper(), string)
-    else:
-        return string[0].lower() + Generator.camelize(string)[1:]
-
-
 def underscore(word):
     """Make an underscored, lowercase form from the expression
     in the string.
@@ -67,3 +56,9 @@ def split_module_name(module_name):
     else:
         path, name = '', module_name
     return path, name
+
+
+def get_camel_case_full_name(proto_type):
+    return ''.join(
+        proto_type['path'].split('.')[2:] + [proto_type['name']]
+    )

@@ -64,10 +64,12 @@ class Generator(object):
     def write_message_types(self):
         self.writer.write('\n\n')
         for message in self.proto_ast['messages']:
+            full_name = '{path}.{name}'.format(**message).split('.', 2)[-1]
             self.writer.write(
-                '\n{name} = {pb2_name}.{name}'.format(
-                    name=message['name'],
-                    pb2_name=self.pb2_name
+                '\n{new_type_name} = {pb2_name}.{type_name}'.format(
+                    new_type_name=helpers.get_camel_case_full_name(message),
+                    type_name=full_name,
+                    pb2_name=self.pb2_name,
                 )
             )
 
@@ -157,15 +159,16 @@ class Generator(object):
     def write_rpc_methods(self, methods):
         for method in methods:
             req_type = self.ast_maps['messages'][method['input_type']]
+            req_type_name = helpers.get_camel_case_full_name(req_type)
             if self.unfold_method_args:
                 req_param_names = [
                     helpers.underscore(field['name'])
                     for field in req_type['fields']
                 ]
-                self.write_unfolded_rpc_method(method['name'], req_type['name'],
+                self.write_unfolded_rpc_method(method['name'], req_type_name,
                                                req_param_names)
             else:
-                self.write_folded_rpc_method(method['name'], req_type['name'])
+                self.write_folded_rpc_method(method['name'], req_type_name)
 
     def write_service_class(self, service):
         self.write_class_header(service['name'])

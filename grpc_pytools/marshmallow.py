@@ -64,10 +64,12 @@ class Generator(object):
     def write_message_types(self):
         self.writer.write('\n\n')
         for message in self.proto_ast['messages']:
+            full_name = '{path}.{name}'.format(**message).split('.', 2)[-1]
             self.writer.write(
-                '\n{name} = {pb2_name}.{name}'.format(
-                    name=message['name'],
-                    pb2_name=self.pb2_name
+                '\n{new_type_name} = {pb2_name}.{type_name}'.format(
+                    new_type_name=helpers.get_camel_case_full_name(message),
+                    type_name=full_name,
+                    pb2_name=self.pb2_name,
                 )
             )
 
@@ -75,7 +77,7 @@ class Generator(object):
         for message in self.proto_ast['messages']:
             self.writer.write(
                 '\n\n\nclass {name}Schema(Schema):\n'.format(
-                    name=message['name']
+                    name=helpers.get_camel_case_full_name(message)
                 )
             )
             for field in message['fields']:
@@ -84,7 +86,9 @@ class Generator(object):
                 fixed = 'fields.' + type
                 if type == 'Nested':
                     nested_type = self.ast_maps['messages'][field['type_name']]
-                    params = ["'{}Schema'".format(nested_type['name'])]
+                    params = ["'{}Schema'".format(
+                        helpers.get_camel_case_full_name(nested_type)
+                    )]
                     if label == 'LABEL_REQUIRED':
                         params.append('required=True')
                     elif label == 'LABEL_REPEATED':
@@ -110,7 +114,7 @@ class Generator(object):
                 '\n    @post_load\n'
                 '    def make_{underscored_name}(self, data):\n'
                 '        return {name}(**data)'.format(
-                    name=message['name'],
+                    name=helpers.get_camel_case_full_name(message),
                     underscored_name=helpers.underscore(message['name'])
                 )
             )

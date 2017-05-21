@@ -97,8 +97,12 @@ class Generator(object):
 
     def write_rpc_resources(self, service):
         for method in service['methods']:
-            req_name = self.ast_maps['messages'][method['input_type']]['name']
-            resp_name = self.ast_maps['messages'][method['output_type']]['name']
+            req_name = helpers.get_camel_case_full_name(
+                self.ast_maps['messages'][method['input_type']]
+            )
+            resp_name = helpers.get_camel_case_full_name(
+                self.ast_maps['messages'][method['output_type']]
+            )
             self.writer.write('\n\n' + RESOURCE.format(
                 underscored_service_name=helpers.underscore(service['name']),
                 underscored_method_name=helpers.underscore(method['name']),
