@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-"""Generate simple RESTArt APIs for all gRPC methods defined in the .proto file.
+"""Generate simple RESTArt APIs for all gRPC methods defined in the xx_pb2.py file.
 
 Usage:
     $ python -m grpc_pytools.restart -h

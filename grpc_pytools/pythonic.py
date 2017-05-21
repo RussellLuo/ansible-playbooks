@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-"""Generate more Pythonic services for all gRPC services defined in the .proto file.
+"""Generate more Pythonic services for all gRPC services defined in the xx_pb2.py file.
 
 Usage:
     $ python -m grpc_pytools.pythonic -h

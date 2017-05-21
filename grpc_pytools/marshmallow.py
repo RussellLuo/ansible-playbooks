@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-"""Generate marshmallow schemas for all gRPC messages defined in the .proto file.
+"""Generate marshmallow schemas for all gRPC messages defined in the xx_pb2.py file.
 
 Usage:
     $ python -m grpc_pytools.marshmallow -h
