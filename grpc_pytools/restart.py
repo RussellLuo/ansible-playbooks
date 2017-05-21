@@ -1,18 +1,18 @@
 # -*- coding: utf-8 -*-
 
-"""Generate simple RESTArt APIs for all gRPC methods defined in the xx_pb2.py file.
+"""Generate simple RESTArt APIs for all gRPC methods defined in the .proto file.
+
+Usage:
+    $ python -m grpc_pytools.restart -h
 
 Example:
-    $ python -mgrpc_pytools.restart --pb2-module-name='python.path.xx_pb2' --grpc-server='localhost:50051'
+    $ python -m grpc_pytools.restart --proto-ast-file=/path/to/xx_ast.json --pb2-module-name=python.path.to.xx_pb2 --grpc-server=localhost:50051
 """
 
 import argparse
-import re
 import sys
-from collections import OrderedDict
-from importlib import import_module
 
-import grpc
+from . import helpers
 
 
 HEADER = '''# -*- coding: utf-8 -*-
@@ -24,10 +24,10 @@ from restart.renderers import JSONRenderer
 from restart.resource import Resource
 
 import schemas
-import service
+import services
 
 api = RESTArt()
-service = service.{service_name}Service('{target}')
+{service_definitions}
 
 
 class GRPCMessageParser(JSONParser):
@@ -61,14 +61,13 @@ class GRPCResource(Resource):
 '''
 
 
-RESOURCE = '''@api.route(methods=['POST'])
+RESOURCE = '''@api.route(uri='/{underscored_service_name}/{underscored_method_name}', methods=['POST'])
 class {method_name}(GRPCResource):
-    name = '{underscored_method_name}'
     req_schema = schemas.{req_name}Schema()
     resp_schema = schemas.{resp_name}Schema()
 
     def create(self, request):
-        return service.{underscored_method_name}(request.data)
+        return {underscored_service_name}.{underscored_method_name}(request.data)
 '''
 
 
@@ -76,95 +75,57 @@ class Generator(object):
 
     writer = sys.stdout
 
-    def __init__(self, pb2_module_name, grpc_server):
-        self.pb2_module_name = pb2_module_name
+    def __init__(self, proto_ast_file, pb2_module_name, grpc_server):
+        self.proto_ast, self.ast_maps = helpers.load_proto_ast(proto_ast_file)
+        self.pb2_path, self.pb2_name = helpers.split_module_name(
+            pb2_module_name)
         self.grpc_server = grpc_server
 
-        if '.' in self.pb2_module_name:
-            self.pb2_path, self.pb2_name = self.pb2_module_name.rsplit('.', 1)
-        else:
-            self.pb2_path, self.pb2_name = '', self.pb2_module_name
-
-        self.pb2_module = import_module(self.pb2_module_name)
-        self.sym_db_pool = self.pb2_module._sym_db.pool
-
-        self.stub_class_name = [
-            name for name in dir(self.pb2_module)
-            if not name.startswith('Beta') and name.endswith('Stub')
-        ][0]
-        self.service_name = self.stub_class_name[:-len('Stub')]
-
-    @staticmethod
-    def camelize(string, uppercase_first_letter=True):
-        """Convert strings to CamelCase.
-
-        Borrowed from https://github.com/jpvanhal/inflection/blob/master/inflection.py
-        """
-        if uppercase_first_letter:
-            return re.sub(r"(?:^|_)(.)", lambda m: m.group(1).upper(), string)
-        else:
-            return string[0].lower() + Generator.camelize(string)[1:]
-
-    @staticmethod
-    def underscore(word):
-        """Make an underscored, lowercase form from the expression
-        in the string.
-
-        Borrowed from https://github.com/jpvanhal/inflection/blob/master/inflection.py
-        """
-        word = re.sub(r"([A-Z]+)([A-Z][a-z])", r'\1_\2', word)
-        word = re.sub(r"([a-z\d])([A-Z])", r'\1_\2', word)
-        word = word.replace("-", "_")
-        return word.lower()
-
-    def write_module_header(self):
+    def write_module_header(self, services):
+        service_definitions = '\n'.join([
+            "{service_name} = services.{service_class_name}('{target}')".format(
+                service_name=helpers.underscore(service['name']),
+                service_class_name=service['name'],
+                target=self.grpc_server
+            )
+            for service in services
+        ])
         self.writer.write(HEADER.format(
-            service_name=self.service_name,
-            target=self.grpc_server
+            service_definitions=service_definitions
         ))
 
-    def write_rpc_resources(self):
-        stub_class = getattr(self.pb2_module, self.stub_class_name)
-
-        channel = grpc.insecure_channel('localhost')
-        stub = stub_class(channel)
-        stub_method_names = [
-            attr
-            for attr in dir(stub)
-            if not attr.startswith('__')
-        ]
-        stub_method_names.sort()
-        stub_methods = OrderedDict([
-            (stub_method_name, getattr(stub, stub_method_name))
-            for stub_method_name in stub_method_names
-        ])
-
-        for stub_method_name, stub_method in stub_methods.iteritems():
-            # Yes, it is tricky...
-            req_name = stub_method._request_serializer.im_class.__name__
-            resp_name = stub_method._response_deserializer.func_closure[0].cell_contents.__name__
+    def write_rpc_resources(self, service):
+        for method in service['methods']:
+            req_name = self.ast_maps['messages'][method['input_type']]['name']
+            resp_name = self.ast_maps['messages'][method['output_type']]['name']
             self.writer.write('\n\n' + RESOURCE.format(
-                method_name=stub_method_name,
-                underscored_method_name=self.underscore(stub_method_name),
+                underscored_service_name=helpers.underscore(service['name']),
+                underscored_method_name=helpers.underscore(method['name']),
+                method_name=method['name'],
                 req_name=req_name,
                 resp_name=resp_name
             ))
 
     def generate(self):
-        self.write_module_header()
-        self.write_rpc_resources()
+        services = self.proto_ast['services']
+        self.write_module_header(services)
+        for service in services:
+            self.write_rpc_resources(service)
 
 
 def main():
     parser = argparse.ArgumentParser()
+    parser.add_argument('--proto-ast-file', required=True,
+                        help='The path of the AST-like JSON file.')
     parser.add_argument('--pb2-module-name', required=True,
-                        help='The name of the generated `xx_pdb2.py` '
+                        help='The name of the generated `xx_pb2.py` '
                              'module with the full Python path.')
     parser.add_argument('--grpc-server', required=True,
                         help='The host and port of gRPC server (in '
                              'the form of "host:port").')
     args = parser.parse_args()
-    generator = Generator(args.pb2_module_name,
+    generator = Generator(args.proto_ast_file,
+                          args.pb2_module_name,
                           args.grpc_server)
     generator.generate()
 

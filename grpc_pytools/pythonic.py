@@ -168,7 +168,7 @@ class Generator(object):
                 self.write_folded_rpc_method(method['name'], req_type['name'])
 
     def write_service_class(self, service):
-        self.write_class_header(service['name'] + 'Service')
+        self.write_class_header(service['name'])
         self.write_class_constructor()
         self.write_stub_property(service['name'] + 'Stub')
         self.write_core_method()
