@@ -63,6 +63,7 @@ class GRPCResource(Resource):
 
 RESOURCE = '''@api.route(uri='/{underscored_service_name}/{underscored_method_name}', methods=['POST'])
 class {method_name}(GRPCResource):
+    name = '{underscored_service_name}.{underscored_method_name}'
     req_schema = schemas.{req_name}Schema()
     resp_schema = schemas.{resp_name}Schema()
 
