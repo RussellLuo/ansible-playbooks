@@ -9,13 +9,13 @@ First of all, change to directory `helloworld`.
 1. Generate the helloworld_ast.json file
 
     ```bash
-    $ python -m grpc_tools.protoc -I=. --pytools-ast_out=. helloworld.proto
+    $ python -m grpc_tools.protoc -I. --pytools-ast_out=. helloworld.proto
     ```
 
 2. Generate the helloworld_pb2.py file
 
     ```bash
-    $ python -m grpc_tools.protoc -I=. --python_out=. --grpc_python_out=. helloworld.proto
+    $ python -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. helloworld.proto
     ```
 
 3. Generate the Pythonic services

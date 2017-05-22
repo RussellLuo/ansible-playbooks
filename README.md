@@ -32,7 +32,7 @@ $ pip install grpc-pytools
 Generate an AST-like JSON file from the .proto file:
 
 ```bash
-$ python -m grpc_tools.protoc -I=. --pytools-ast_out=. xx.proto
+$ python -m grpc_tools.protoc -I. --pytools-ast_out=. xx.proto
 ```
 
 ### Tools
