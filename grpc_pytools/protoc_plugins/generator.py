@@ -1,8 +1,13 @@
 # -*- coding: utf-8 -*-
 
+import sys
+
 from enum import Enum
 
 from google.protobuf.compiler import plugin_pb2 as plugin
+
+
+IS_PY3 = sys.version_info > (3,)
 
 
 class ProtoType(Enum):
@@ -36,12 +41,11 @@ class ProtoLabel(Enum):
 class Generator(object):
     """The base generator for implementing a protoc plugin."""
 
+    reader = sys.stdin.buffer if IS_PY3 else sys.stdin
+    writer = sys.stdout.buffer if IS_PY3 else sys.stdout
+
     _types_map = ProtoType._value2member_map_
     _labels_map = ProtoLabel._value2member_map_
-
-    def __init__(self, reader, writer):
-        self.reader = reader
-        self.writer = writer
 
     def _parse(self, data):
         request = plugin.CodeGeneratorRequest()

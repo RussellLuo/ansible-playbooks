@@ -2,7 +2,6 @@
 
 import json
 import os
-import sys
 
 from .generator import Generator
 
@@ -112,7 +111,7 @@ class ASTGenerator(Generator):
 
 
 def main():
-    ASTGenerator(sys.stdin, sys.stdout).generate()
+    ASTGenerator().generate()
 
 
 if __name__ == '__main__':
