@@ -3,6 +3,17 @@
 Here you can see the full list of changes between each grpc-pytools release.
 
 
+## Version 0.1.2
+
+Released on May 22nd 2017.
+
+- Add missing attribute `name` to each generated resource class
+- Handle nested types with fully-qualified names correctly
+- Write or read binary data from/to the standard streams in Python 3
+- Add CHANGELOG
+- Update README
+
+
 ## Version 0.1.0
 
 Released on May 21st 2017.
