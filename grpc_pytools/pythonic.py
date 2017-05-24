@@ -101,7 +101,7 @@ class Generator(object):
             '\n    def {core_method_name}(self, rpc_name, req):\n'
             '        rpc = getattr(self.stub, rpc_name)\n'
             '        resp = rpc(req, self.timeout)\n'
-            '        return resp\n'.format(
+            '        return resp'.format(
                 core_method_name=self.core_method_name,
                 pb2_name=self.pb2_name
             )
@@ -109,9 +109,9 @@ class Generator(object):
 
     def write_folded_rpc_method(self, method_name, req_name):
         self.writer.write(
-            "\n    def {underscored_method_name}(self, {req_name}):\n"
+            "\n\n    def {underscored_method_name}(self, {req_name}):\n"
             "        resp = self.{core_method_name}('{method_name}', {req_name})\n"
-            "        return resp\n".format(
+            "        return resp".format(
                 underscored_method_name=helpers.underscore(method_name),
                 req_name=helpers.underscore(req_name),
                 core_method_name=self.core_method_name,
@@ -139,7 +139,7 @@ class Generator(object):
             "{indented_kwargs}\n"
             "        )\n"
             "        resp = self.{core_method_name}('{method_name}', req)\n"
-            "        return resp\n".format(
+            "        return resp".format(
                 req_name=req_name,
                 indented_kwargs=indented_kwargs,
                 core_method_name=self.core_method_name,
@@ -147,7 +147,7 @@ class Generator(object):
             )
         )
         self.writer.write(
-            '\n{indented_header}'
+            '\n\n{indented_header}'
             '{indented_params}):\n'
             '{indented_body}'.format(
                 indented_header=indented_header,
