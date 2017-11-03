@@ -90,7 +90,7 @@ class Generator(object):
             '\n    @property\n'
             '    def stub(self):\n'
             '        channel = grpc.insecure_channel(self.target)\n'
-            '        return {pb2_name}.{stub_class_name}(channel)\n'.format(
+            '        return {pb2_name}_grpc.{stub_class_name}(channel)\n'.format(
                 pb2_name=self.pb2_name,
                 stub_class_name=stub_class_name
             )
