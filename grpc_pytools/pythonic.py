@@ -44,7 +44,8 @@ class Generator(object):
             '# -*- coding: utf-8 -*-\n'
             '{import_enum}'
             '\nimport grpc'
-            '\n\n{import_pb2}'.format(
+            '\n\n{import_pb2}'
+            '\n{import_pb2}_grpc'.format(
                 import_enum='\nimport enum' if self.has_enum_types() else '',
                 import_pb2=import_pb2
             )
